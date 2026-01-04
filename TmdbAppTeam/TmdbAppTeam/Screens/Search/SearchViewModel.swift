@@ -5,3 +5,6 @@
 //  Created by Durdana on 29.12.25.
 //
 
+final class SearchViewModel {
+    
+}

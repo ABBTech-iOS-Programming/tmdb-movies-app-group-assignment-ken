@@ -22,7 +22,7 @@ extension Endpoint {
       guard  var components = URLComponents(string: baseURL) else {
             return .failure(.invalidURL)
         }
-        components.path = path
+        components.path += path
         components.queryItems = queryItems
         
         guard let url = components.url else {
