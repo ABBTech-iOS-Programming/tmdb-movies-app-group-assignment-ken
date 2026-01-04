@@ -15,7 +15,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		5EFCACAF2F081379008EB443 /* Exceptions for "TmdbAppTeam" folder in "TmdbAppTeam" target */ = {
+		5E09B2D42F0B0352002BA672 /* Exceptions for "TmdbAppTeam" folder in "TmdbAppTeam" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -28,7 +28,7 @@
 		5EFCAC9F2F081378008EB443 /* TmdbAppTeam */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				5EFCACAF2F081379008EB443 /* Exceptions for "TmdbAppTeam" folder in "TmdbAppTeam" target */,
+				5E09B2D42F0B0352002BA672 /* Exceptions for "TmdbAppTeam" folder in "TmdbAppTeam" target */,
 			);
 			path = TmdbAppTeam;
 			sourceTree = "<group>";
