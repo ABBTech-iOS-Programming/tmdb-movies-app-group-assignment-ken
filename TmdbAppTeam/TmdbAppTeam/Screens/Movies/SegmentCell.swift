@@ -53,7 +53,7 @@ final class SegmentCell: UICollectionViewCell {
 
     func configure(title: String, isSelected: Bool) {
         titleLabel.text = title
-        titleLabel.textColor = isSelected ? .white : .gray
+        titleLabel.textColor = isSelected ? .whiteHigh : .whiteDisable
         underlineView.isHidden = !isSelected
     }
 }

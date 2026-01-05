@@ -12,6 +12,7 @@ final class MoviesViewController: UIViewController {
     
     private let viewModel: MoviesViewModel
     
+    
     init(viewModel: MoviesViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -91,7 +92,7 @@ final class MoviesViewController: UIViewController {
         let spacing: CGFloat = 16
         let columns = CGFloat(3.0)
         let totalSpacing = spacing * (columns + 1)
-        let itemWidth = (UIScreen.main.bounds.width - totalSpacing) / columns
+        let itemWidth = floor((UIScreen.main.bounds.width - totalSpacing) / columns)
 
         layout.itemSize = CGSize(width: itemWidth, height: itemWidth * 1.5)
         layout.minimumLineSpacing = spacing
@@ -186,12 +187,17 @@ final class MoviesViewController: UIViewController {
         categoryCollectionView.snp.makeConstraints { make in
             make.top.equalTo(segmentCollectionView.snp.bottom).offset(16)
             make.leading.trailing.equalToSuperview()
-            make.height.equalTo(900)
+            make.height.equalTo(1000)
             make.bottom.equalToSuperview().offset(-20)
         }
     }
     
-     
+    private func goToDetail(with movieId: Int) {
+        let detailViewModel = MovieDetailViewModel( service: DefaultNetworkService(), movieId: movieId )
+        let detailViewController = MovieDetailViewController(viewModel: detailViewModel)
+        navigationController?.pushViewController(detailViewController, animated: true)
+    }
+
 }
 
 extension MoviesViewController: UICollectionViewDataSource {
@@ -265,7 +271,15 @@ extension MoviesViewController: UICollectionViewDelegate {
             default:
                 break
             }
+            return
         }
+        let selectedMovie: Movie
+        if collectionView.tag == 0 {
+            selectedMovie = viewModel.trendingMovies[indexPath.row]
+        } else {
+            selectedMovie = viewModel.categoryMovies[indexPath.item]
+        }
+        goToDetail(with: selectedMovie.id)
     }
 }
 
