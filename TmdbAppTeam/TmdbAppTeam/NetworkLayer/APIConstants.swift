@@ -21,4 +21,6 @@ enum APIConstants {
         }
         return value
     }()
+    
+    static let imageBaseURL = "https://image.tmdb.org/t/p/w500"
 }

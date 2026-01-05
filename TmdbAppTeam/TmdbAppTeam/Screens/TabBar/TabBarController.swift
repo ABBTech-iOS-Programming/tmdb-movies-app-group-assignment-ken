@@ -11,12 +11,13 @@ final class TabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupTabs()
+        setupApperanceTab()
     }
 
     private func setupTabs() {
         
         let moviesVC = MoviesViewController(
-            viewModel: MoviesViewModel()
+            viewModel: MoviesViewModel(service: DefaultNetworkService())
         )
         
         let searchVC = SearchViewController(
@@ -51,9 +52,26 @@ final class TabBarController: UITabBarController {
             selectedImage: UIImage(named: "watchlist-blue")
         )
         
-        tabBar.backgroundColor = .black
-
         viewControllers = [moviesNav, searchNav, watchListNav]
     }
+    
+    func setupApperanceTab() {
+        let apperance = UITabBarAppearance()
+        apperance.backgroundColor = .black
+        apperance.configureWithOpaqueBackground()
+    
+        tabBar.tintColor = .systemBlue
+        tabBar.unselectedItemTintColor = .gray
+        
+        tabBar.layer.cornerRadius = 20
+        tabBar.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        tabBar.clipsToBounds = true
+        
+        tabBar.standardAppearance = apperance
+        tabBar.scrollEdgeAppearance = apperance
+        
+    }
+    
+    
 
 }
