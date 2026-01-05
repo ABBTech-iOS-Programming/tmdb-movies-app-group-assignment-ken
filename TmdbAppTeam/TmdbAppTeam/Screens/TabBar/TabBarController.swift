@@ -57,12 +57,12 @@ final class TabBarController: UITabBarController {
     
     func setupApperanceTab() {
         let apperance = UITabBarAppearance()
-        apperance.backgroundColor = .black
+      
         apperance.configureWithOpaqueBackground()
-    
+        apperance.backgroundColor = UIColor(named: "blackMedium")
         tabBar.tintColor = .systemBlue
         tabBar.unselectedItemTintColor = .gray
-        
+        tabBar.isTranslucent = false
         tabBar.layer.cornerRadius = 20
         tabBar.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         tabBar.clipsToBounds = true

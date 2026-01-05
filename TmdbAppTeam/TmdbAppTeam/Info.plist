@@ -2,12 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>TMDB_BASE_URL</key>
-    <string>https://api.themoviedb.org/3</string>
-
-    <key>TMDB_API_TOKEN</key>
-    <string>Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxZDNmODBmYjhiNzg4NmRiYjE2OWZkY2Q3ZDc4NTQzZCIsIm5iZiI6MTc2NzQ1MzI4MC41NzYsInN1YiI6IjY5NTkzMjYwYmY1MzhiN2Y0ZmQ3YmFkYiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.B-yDrIiJHh17Twx9urohGYWqr6hqQv5v4qPn_WZQ4Z8</string>
-    
+	<key>TMDB_API_TOKEN</key>
+	<string>Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxZDNmODBmYjhiNzg4NmRiYjE2OWZkY2Q3ZDc4NTQzZCIsIm5iZiI6MTc2NzQ1MzI4MC41NzYsInN1YiI6IjY5NTkzMjYwYmY1MzhiN2Y0ZmQ3YmFkYiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.B-yDrIiJHh17Twx9urohGYWqr6hqQv5v4qPn_WZQ4Z8</string>
+	<key>TMDB_BASE_URL</key>
+	<string>https://api.themoviedb.org/3</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
