@@ -93,7 +93,7 @@ final class MovieDetailViewController:UIViewController {
     
     private let movieTitleLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 17, weight: .medium)
+        label.font = .systemFont(ofSize: 20, weight: .semibold)
         label.textColor = .blackHigh
         label.numberOfLines = 2
         return label
@@ -121,6 +121,10 @@ final class MovieDetailViewController:UIViewController {
         return label
     }()
     
+    private let yearItem = InfoItemView(icon: "calendar")
+    private let timeItem = InfoItemView(icon: "clock")
+    private let genreItem = InfoItemView(icon: "ticket")
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .background
@@ -128,6 +132,7 @@ final class MovieDetailViewController:UIViewController {
         setupUI()
         binding()
         viewModel.fetchMovieDetails()
+        viewModel.fetchMovieReview()
     }
     
     private func setupUI() {
@@ -143,64 +148,44 @@ final class MovieDetailViewController:UIViewController {
         backGroundImage.addSubview(ratingView)
         [starImageView, ratingLabel].forEach(ratingView.addSubview)
         
+        [yearItem, timeItem, genreItem].forEach(infoStackView.addArrangedSubview)
+        
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
         [backGroundImage, posterImageView, movieTitleLabel, infoStackView,
-         descriptionLabel, segmentCollectionView].forEach(contentView.addSubview)
+         descriptionLabel, segmentCollectionView, reviewsTableView].forEach(contentView.addSubview)
+    }
+    
+    private func updateUI() {
+        guard let detail = viewModel.movieDetail else { return }
+        movieTitleLabel.text = detail.title
+        descriptionLabel.text = detail.overview
+        ratingLabel.text = String(format: "%.1f", detail.voteAverage ?? 0.0)
+        
+        yearItem.updateText(viewModel.releaseYear)
+        timeItem.updateText(viewModel.runtimeText)
+        genreItem.updateText(viewModel.genreText)
     }
     
     private func binding() {
         
         viewModel.onDataFetched = { [weak self] in
-            guard let self = self, let detail = self.viewModel.movieDetail else { return }
+            guard let self = self else { return }
+            self.updateUI()
+            self.viewModel.fetchPoster()
+        }
+        
+        viewModel.onPosterUpdate = { [weak self] data in
+            guard let self = self else { return }
+            self.backGroundImage.image = UIImage(data: data)
+            self.posterImageView.image = UIImage(data: data)
             
-            DispatchQueue.main.async {
-                self.movieTitleLabel.text = detail.title
-                self.descriptionLabel.text = detail.overview
-                self.ratingLabel.text = String(format: "%.1f", detail.voteAverage ?? 0.0)
-                self.setupInfoStack()
-                
-                self.viewModel.downloadImage { [weak self] imageData in
-                    if let data = imageData {
-                        self?.backGroundImage.image = UIImage(data: data)
-                    }
-                }
-                
-                if let posterURL = self.viewModel.posterURL {
-                    URLSession.shared.dataTask(with: URL(string: posterURL)!) { [weak self] data, response, error in
-                        if let data = data {
-                            DispatchQueue.main.async {
-                                self?.posterImageView.image = UIImage(data: data)
-                            }
-                        }
-                    }.resume()
-                }
+            viewModel.onReviewsFetched = { [weak self] in
+                self?.reviewsTableView.reloadData()
             }
         }
     }
     
-    private func infoItem(icon: String, text: String) -> UIView {
-        let stack = UIStackView()
-        stack.axis = .horizontal
-        stack.spacing = 4
-        
-        let iconView = UIImageView(image: UIImage(systemName: icon))
-        iconView.tintColor = .whiteMedium
-        
-        iconView.snp.makeConstraints { make in
-            make.size.equalTo(16)
-        }
-        
-        let label = UILabel()
-        label.text = text
-        label.font = .systemFont(ofSize: 12, weight: .regular)
-        label.textColor = .whiteMedium
-        
-        stack.addArrangedSubview(iconView)
-        stack.addArrangedSubview(label)
-        
-        return stack
-    }
     
     private lazy var segmentCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -217,16 +202,21 @@ final class MovieDetailViewController:UIViewController {
         return cv
     }()
     
-    private func setupInfoStack() {
-        infoStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+    private lazy var reviewsTableView: UITableView = {
+        let review = UITableView()
+        review.backgroundColor = .clear
+        review.separatorStyle = .none
+        review.delegate = self
+        review.dataSource = self
+        review.isHidden = true
         
-        let yearItem = infoItem(icon: "calendar", text: viewModel.releaseYear)
-        let timeItem = infoItem(icon: "clock", text: viewModel.runtimeText)
-        let genreItem = infoItem(icon: "ticket", text: viewModel.genreText)
-        
-        [yearItem, timeItem, genreItem].forEach { infoStackView.addArrangedSubview($0) }
-    }
+        review.register(MoviewReviewCell.self, forCellReuseIdentifier: MoviewReviewCell.reuseIdentifier)
+        return review
+    }()
     
+    
+    
+    //MARK: - Constraits
     private func constraits() {
         
         headerContainerView.snp.makeConstraints { make in
@@ -287,7 +277,6 @@ final class MovieDetailViewController:UIViewController {
             make.height.equalTo(136)
             make.width.equalTo(110)
             make.leading.equalToSuperview().offset(30)
-            //make.top.equalTo(backGroundImage.snp.top).inset(134)
             make.centerY.equalTo(backGroundImage.snp.bottom)
         }
         
@@ -314,8 +303,16 @@ final class MovieDetailViewController:UIViewController {
             make.horizontalEdges.equalToSuperview().inset(16)
             make.bottom.equalToSuperview().inset(24)
         }
+        
+        reviewsTableView.snp.makeConstraints { make in
+            make.top.equalTo(segmentCollectionView.snp.bottom).offset(16)
+            make.horizontalEdges.equalToSuperview()
+            make.bottom.equalTo(view.safeAreaLayoutGuide).inset(16)
+        }
     }
 }
+
+//MARK: - Extension
 
 extension MovieDetailViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -323,7 +320,9 @@ extension MovieDetailViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MovieSegmentCell.reuseIdentifier, for: indexPath) as! MovieSegmentCell
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MovieSegmentCell.reuseIdentifier, for: indexPath) as? MovieSegmentCell else {
+            return UICollectionViewCell()
+        }
         let isSelected = indexPath.item == selectedSegmentIndex
         cell.configure(title: segments[indexPath.item], isSelected: isSelected)
         return cell
@@ -337,9 +336,13 @@ extension MovieDetailViewController: UICollectionViewDelegate {
         collectionView.reloadData()
         
         if selectedSegmentIndex == 0 {
+            descriptionLabel.isHidden = false
+            reviewsTableView.isHidden = true
             descriptionLabel.text = viewModel.movieDetail?.overview
         } else {
-            descriptionLabel.text = "There are no reviews yet for this movie."
+            descriptionLabel.isHidden = true
+            reviewsTableView.isHidden = false
+            reviewsTableView.reloadData()
         }
     }
 }
@@ -356,5 +359,20 @@ extension MovieDetailViewController: UICollectionViewDelegateFlowLayout {
         }
         
         return (collectionViewLayout as? UICollectionViewFlowLayout)?.itemSize ?? .zero
+    }
+}
+
+extension MovieDetailViewController: UITableViewDataSource, UITableViewDelegate {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return viewModel.reviews.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: MoviewReviewCell.reuseIdentifier, for: indexPath) as? MoviewReviewCell else {
+            return UITableViewCell()
+        }
+        let review = viewModel.reviews[indexPath.row]
+        cell.configure(with: review)
+        return cell
     }
 }

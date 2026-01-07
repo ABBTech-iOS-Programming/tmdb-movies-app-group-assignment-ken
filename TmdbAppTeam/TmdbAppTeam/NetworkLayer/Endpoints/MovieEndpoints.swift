@@ -14,6 +14,7 @@ enum MovieEndpoints: Endpoint {
     case topRated
     case details(id: Int)
     case search(query: String)
+    case reviews(id: Int)
 
     var baseURL: String {
         APIConstants.baseURL
@@ -35,6 +36,8 @@ enum MovieEndpoints: Endpoint {
             return "/movie/\(id)"
         case .search:
             return "/search/movie"
+        case .reviews(let id):
+            return "/movie/\(id)/reviews"
         }
     }
 
