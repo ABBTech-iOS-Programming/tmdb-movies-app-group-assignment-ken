@@ -88,6 +88,8 @@ final class MovieDetailViewController:UIViewController {
         imageView.layer.cornerRadius = 16
         imageView.clipsToBounds = true
         imageView.contentMode = .scaleAspectFill
+        imageView.layer.borderWidth = 6
+        imageView.layer.borderColor = UIColor.background.cgColor
         return imageView
     }()
     
@@ -372,7 +374,7 @@ extension MovieDetailViewController: UITableViewDataSource, UITableViewDelegate 
             return UITableViewCell()
         }
         let review = viewModel.reviews[indexPath.row]
-        cell.configure(with: review)
+        cell.configure(with: review, viewModel: self.viewModel)
         return cell
     }
 }

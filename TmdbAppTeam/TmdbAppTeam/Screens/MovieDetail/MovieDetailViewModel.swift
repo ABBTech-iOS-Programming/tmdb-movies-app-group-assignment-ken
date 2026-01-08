@@ -45,10 +45,6 @@ final class MovieDetailViewModel {
         return APIConstants.imageBaseURL + path
     }
     
-    var avatarURL: String? {
-        guard let path = reviews.first?.authorDetails?.avatarPath else { return nil }
-        return APIConstants.imageBaseURL + path
-    }
     
     func fetchMovieDetails() {
         service.request(MovieEndpoints.details(id: movieId)) { [weak self] (result: Result<MovieDetail, NetworkError>) in
@@ -92,6 +88,10 @@ final class MovieDetailViewModel {
                 print("LOG Review Error:", error)
             }
         }
+    }
+    
+    func fetchAvatarImage(from url: String, completion: @escaping (Data?) -> Void) {
+        service.downloadImage(from: url, completion: completion)
     }
     
 }
