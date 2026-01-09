@@ -68,7 +68,7 @@ final class MoviesViewController: UIViewController {
         return cv
     }()
     
-    private let segmentTitles = ["Now playing", "Upcoming", "Top rated"]
+    private let segmentTitles = ["Now playing", "Upcoming", "Top rated","Popular"]
     private var selectedSegmentIndex = 0
     
     private lazy var segmentCollectionView: UICollectionView = {
@@ -107,7 +107,7 @@ final class MoviesViewController: UIViewController {
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
         cv.backgroundColor = .clear
         cv.showsVerticalScrollIndicator = false
-        cv.isScrollEnabled = false
+//        cv.isScrollEnabled = false
         cv.register(MovieGridCell.self, forCellWithReuseIdentifier: MovieGridCell.reuseIdentifier)
         cv.dataSource = self
         cv.delegate = self
@@ -123,7 +123,11 @@ final class MoviesViewController: UIViewController {
         bindViewModel()
         viewModel.fetchTrendingMovies()
         viewModel.fetchCategoryMovies(.nowPlaying)
-    }
+        let backImage = UIImage(named: "chevron-icon")
+        navigationController?.navigationBar.backIndicatorImage = backImage
+        navigationController?.navigationBar.backIndicatorTransitionMaskImage = backImage
+        navigationItem.backButtonTitle = ""
+          }
     
     private func bindViewModel() {
         viewModel.onMoviesUpdated = { [weak self] in
@@ -281,6 +285,8 @@ extension MoviesViewController: UICollectionViewDelegate {
                 viewModel.fetchCategoryMovies(.upcoming)
             case 2:
                 viewModel.fetchCategoryMovies(.topRated)
+            case 3:
+                viewModel.fetchCategoryMovies(.popular)
             default:
                 break
             }

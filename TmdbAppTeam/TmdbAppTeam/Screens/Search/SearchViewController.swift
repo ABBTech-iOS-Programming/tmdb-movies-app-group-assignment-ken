@@ -20,6 +20,9 @@ final class SearchViewController: UIViewController {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    private let emptyStateView = SearchEmptyStateView()
+
 
     private let searchBar: UISearchBar = {
         let sb = UISearchBar()
@@ -33,10 +36,11 @@ final class SearchViewController: UIViewController {
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
 
-        let spacing: CGFloat = 16
-        let width = (UIScreen.main.bounds.width - spacing * 3) / 2
-
-        layout.itemSize = CGSize(width: width, height: width * 1.5)
+        let spacing: CGFloat = 8
+        layout.itemSize = CGSize(
+            width: UIScreen.main.bounds.width - (spacing * 2),
+            height: 170
+        )
         layout.minimumLineSpacing = spacing
         layout.minimumInteritemSpacing = spacing
         layout.sectionInset = UIEdgeInsets(
@@ -49,28 +53,41 @@ final class SearchViewController: UIViewController {
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
         cv.backgroundColor = .clear
         cv.register(
-            MovieGridCell.self,
-            forCellWithReuseIdentifier: MovieGridCell.reuseIdentifier
+            SearchCollectionViewCell.self,
+            forCellWithReuseIdentifier: SearchCollectionViewCell.reuseIdentifier
         )
         cv.dataSource = self
         cv.delegate = self
         return cv
     }()
-
+    
+    @objc
+    private func dismissKeyboard() {
+        view.endEditing(true)
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .background
         title = "Search"
+        
         searchBar.delegate = self
         setupUI()
         bindViewModel()
-
         searchBar.becomeFirstResponder()
+        // Keyboard dismiss
+        let tap = UITapGestureRecognizer(
+               target: self,
+               action: #selector(dismissKeyboard)
+           )
+           tap.cancelsTouchesInView = false
+           view.addGestureRecognizer(tap)
     }
 
     private func setupUI() {
         view.addSubview(searchBar)
         view.addSubview(collectionView)
+        view.addSubview(emptyStateView)
 
         searchBar.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
@@ -81,12 +98,24 @@ final class SearchViewController: UIViewController {
             make.top.equalTo(searchBar.snp.bottom)
             make.leading.trailing.bottom.equalToSuperview()
         }
+
+        emptyStateView.snp.makeConstraints { make in
+            make.edges.equalTo(collectionView)
+        }
+
+        emptyStateView.isHidden = true
     }
 
     private func bindViewModel() {
         viewModel.onResultsUpdated = { [weak self] in
             DispatchQueue.main.async {
-                self?.collectionView.reloadData()
+                guard let self else { return }
+
+                self.collectionView.reloadData()
+
+                let isEmpty = self.viewModel.movies.isEmpty
+                self.collectionView.isHidden = isEmpty
+                self.emptyStateView.isHidden = !isEmpty
             }
         }
     }
@@ -109,13 +138,13 @@ extension SearchViewController : UICollectionViewDataSource {
                         cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
 
         guard let cell = collectionView.dequeueReusableCell(
-            withReuseIdentifier: MovieGridCell.reuseIdentifier,
+            withReuseIdentifier: SearchCollectionViewCell.reuseIdentifier,
             for: indexPath
         ) as? SearchCollectionViewCell else {
             return SearchCollectionViewCell()
         }
 
-        cell.configure(with: viewModel.movies[indexPath.item])
+        cell.configure(with: viewModel.movies[indexPath.item],genreMap: viewModel.genreMap)
         return cell
     }
 }

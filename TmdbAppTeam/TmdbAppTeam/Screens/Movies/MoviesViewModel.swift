@@ -11,6 +11,7 @@ enum MovieCategory {
     case nowPlaying
     case upcoming
     case topRated
+    case popular
 }
 
 final class MoviesViewModel {
@@ -54,6 +55,8 @@ final class MoviesViewModel {
             endpoint = MovieEndpoints.upcoming
         case .topRated:
             endpoint = MovieEndpoints.topRated
+        case .popular:
+            endpoint = MovieEndpoints.popular
         }
 
         service.request(endpoint) {
