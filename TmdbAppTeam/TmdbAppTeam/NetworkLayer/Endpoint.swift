@@ -19,9 +19,10 @@ protocol Endpoint {
 extension Endpoint {
     func makeRequest() -> Result<URLRequest, NetworkError> {
         
-      guard  var components = URLComponents(string: baseURL) else {
+        guard  var components = URLComponents(string: baseURL) else {
             return .failure(.invalidURL)
         }
+        
         components.path += path
         components.queryItems = queryItems
         

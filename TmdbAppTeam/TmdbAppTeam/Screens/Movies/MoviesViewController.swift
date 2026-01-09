@@ -118,6 +118,7 @@ final class MoviesViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .background
+        searchBar.delegate = self
         setupUI()
         bindViewModel()
         viewModel.fetchTrendingMovies()
@@ -128,9 +129,16 @@ final class MoviesViewController: UIViewController {
         viewModel.onMoviesUpdated = { [weak self] in
             guard let self else { return }
             DispatchQueue.main.async {
-                self.trendingCollectionView.reloadData()
                 self.segmentCollectionView.reloadData()
                 self.categoryCollectionView.reloadData()
+            }
+        }
+        
+        viewModel.onTrendingUpdated = { [weak self] in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                self.trendingCollectionView.reloadData()
+               
             }
         }
     }
@@ -144,7 +152,7 @@ final class MoviesViewController: UIViewController {
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
         [headerLabel,searchBar,trendingTitleLabel,trendingCollectionView,segmentCollectionView,categoryCollectionView].forEach(contentView.addSubview)
-    }
+    } 
     
     private func constraints() {
         scrollView.snp.makeConstraints { make in
@@ -197,7 +205,12 @@ final class MoviesViewController: UIViewController {
         let detailViewController = MovieDetailViewController(viewModel: detailViewModel)
         navigationController?.pushViewController(detailViewController, animated: true)
     }
-
+    
+    private func openSearchScreen() {
+        let viewModel = SearchViewModel(service: DefaultNetworkService())
+        let vc = SearchViewController(viewModel: viewModel)
+        navigationController?.pushViewController(vc, animated: true)
+    }
 }
 
 extension MoviesViewController: UICollectionViewDataSource {
@@ -295,5 +308,14 @@ extension MoviesViewController: UICollectionViewDelegateFlowLayout {
         }
 
         return (collectionViewLayout as? UICollectionViewFlowLayout)?.itemSize ?? .zero
+    }
+}
+
+
+extension MoviesViewController: UISearchBarDelegate {
+
+    func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+        openSearchScreen()
     }
 }

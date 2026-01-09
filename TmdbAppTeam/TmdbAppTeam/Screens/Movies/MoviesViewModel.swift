@@ -21,6 +21,7 @@ final class MoviesViewModel {
     var categoryMovies: [Movie] = []
 
     var onMoviesUpdated: (() -> Void)?
+    var onTrendingUpdated: (() -> Void)?
 
     init(service: DefaultNetworkService) {
         self.service = service
@@ -34,11 +35,11 @@ final class MoviesViewModel {
             case .success(let response):
                 self?.trendingMovies = response.results
                 DispatchQueue.main.async {
-                    self?.onMoviesUpdated?()
+                    self?.onTrendingUpdated?()
                 }
 
             case .failure(let error):
-                print("LOG: Trending error:", error)
+                print("Trending error:", error)
             }
         }
     }
@@ -66,7 +67,7 @@ final class MoviesViewModel {
                 }
 
             case .failure(let error):
-                print("LOG: Category error:", error)
+                print("Category error:", error)
             }
         }
     }

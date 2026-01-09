@@ -21,7 +21,7 @@ final class TabBarController: UITabBarController {
         )
         
         let searchVC = SearchViewController(
-            viewModal: SearchViewModel()
+            viewModel: SearchViewModel(service: DefaultNetworkService())
         )
         
         let watchListVC = WatchListViewController(
