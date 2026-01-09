@@ -11,6 +11,7 @@ enum MovieCategory {
     case nowPlaying
     case upcoming
     case topRated
+    case popular
 }
 
 final class MoviesViewModel {
@@ -21,6 +22,7 @@ final class MoviesViewModel {
     var categoryMovies: [Movie] = []
 
     var onMoviesUpdated: (() -> Void)?
+    var onTrendingUpdated: (() -> Void)?
 
     init(service: DefaultNetworkService) {
         self.service = service
@@ -34,11 +36,11 @@ final class MoviesViewModel {
             case .success(let response):
                 self?.trendingMovies = response.results
                 DispatchQueue.main.async {
-                    self?.onMoviesUpdated?()
+                    self?.onTrendingUpdated?()
                 }
 
             case .failure(let error):
-                print("LOG: Trending error:", error)
+                print("Trending error:", error)
             }
         }
     }
@@ -53,6 +55,8 @@ final class MoviesViewModel {
             endpoint = MovieEndpoints.upcoming
         case .topRated:
             endpoint = MovieEndpoints.topRated
+        case .popular:
+            endpoint = MovieEndpoints.popular
         }
 
         service.request(endpoint) {
@@ -66,7 +70,7 @@ final class MoviesViewModel {
                 }
 
             case .failure(let error):
-                print("LOG: Category error:", error)
+                print("Category error:", error)
             }
         }
     }
