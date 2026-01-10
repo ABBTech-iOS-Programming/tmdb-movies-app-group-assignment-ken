@@ -28,7 +28,6 @@ final class WatchListViewModel {
                 print("WatchList error:", error)
             }
         }
-        
     }
     
     func fetchGenresAndWatchlist() {

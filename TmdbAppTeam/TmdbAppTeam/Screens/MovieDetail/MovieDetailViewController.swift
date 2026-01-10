@@ -71,7 +71,6 @@ final class MovieDetailViewController:UIViewController {
     private let bookmarkButton: UIButton = {
         let button = UIButton(type: .custom)
         button.setImage(UIImage(systemName: "bookmark"), for: .normal)
-        //button.setImage(UIImage(systemName: "bookmark.fill"), for: .selected)
         button.tintColor = .whiteHigh
         button.backgroundColor = .clear
         return button

@@ -12,15 +12,6 @@ final class WatchListViewController : UIViewController {
     private let viewModel : WatchListViewModel
     private let emptyView = EmptyStateLabel()
     
-    private let titleLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Watch list"
-        label.font = .systemFont(ofSize: 17, weight: .semibold)
-        label.textColor = .whiteHigh
-        label.textAlignment = .center
-        return label
-    }()
-    
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.minimumLineSpacing = 16
@@ -43,6 +34,7 @@ final class WatchListViewController : UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        title = "Watch List"
         view.backgroundColor = .background
         setupUi()
         constraits()
@@ -65,18 +57,13 @@ final class WatchListViewController : UIViewController {
     }
     
     private func addSubview() {
-        [titleLabel,emptyView, collectionView].forEach(view.addSubview)
+        [emptyView, collectionView].forEach(view.addSubview)
     }
     private func constraits() {
         
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(12)
-            make.centerX.equalToSuperview()
-        }
-        
         collectionView.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(16)
-            make.edges.equalToSuperview().inset(16)
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(12)
+            make.leading.trailing.bottom.equalToSuperview().inset(16)
         }
         
         emptyView.snp.makeConstraints { make in
@@ -98,8 +85,6 @@ final class WatchListViewController : UIViewController {
             }
         }
     }
-    
-    
 }
 
 extension WatchListViewController: UICollectionViewDataSource {

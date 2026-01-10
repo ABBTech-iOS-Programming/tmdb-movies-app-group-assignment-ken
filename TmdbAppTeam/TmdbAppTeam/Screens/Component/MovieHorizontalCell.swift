@@ -16,7 +16,7 @@ final class MovieHorizontalCell: UICollectionViewCell {
     private let rightStackView: UIStackView = {
         let sv = UIStackView()
         sv.axis = .vertical
-        sv.spacing = 8
+        sv.spacing = 13
         sv.alignment = .leading
         return sv
     }()

@@ -121,8 +121,7 @@ final class MoviewReviewCell: UITableViewCell {
                     self?.avatarImageView.image = UIImage(data: data)
                 }
             }
-            }
-   
+        }
     }
     
     override func prepareForReuse() {
