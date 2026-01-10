@@ -19,9 +19,10 @@ protocol Endpoint {
 extension Endpoint {
     func makeRequest() -> Result<URLRequest, NetworkError> {
         
-      guard  var components = URLComponents(string: baseURL) else {
+        guard  var components = URLComponents(string: baseURL) else {
             return .failure(.invalidURL)
         }
+        
         components.path += path
         components.queryItems = queryItems
         
@@ -37,6 +38,11 @@ extension Endpoint {
         }
         
         if let httpBody {
+            
+            if request.value(forHTTPHeaderField: "Content-Type") == nil {
+                        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                    }
+            
             do{
                 let encodingData = try JSONEncoder().encode(httpBody)
                 request.httpBody = encodingData

@@ -68,7 +68,7 @@ final class MoviesViewController: UIViewController {
         return cv
     }()
     
-    private let segmentTitles = ["Now playing", "Upcoming", "Top rated"]
+    private let segmentTitles = ["Now playing", "Upcoming", "Top rated","Popular"]
     private var selectedSegmentIndex = 0
     
     private lazy var segmentCollectionView: UICollectionView = {
@@ -107,7 +107,7 @@ final class MoviesViewController: UIViewController {
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
         cv.backgroundColor = .clear
         cv.showsVerticalScrollIndicator = false
-        cv.isScrollEnabled = false
+//        cv.isScrollEnabled = false
         cv.register(MovieGridCell.self, forCellWithReuseIdentifier: MovieGridCell.reuseIdentifier)
         cv.dataSource = self
         cv.delegate = self
@@ -118,19 +118,31 @@ final class MoviesViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .background
+        searchBar.delegate = self
         setupUI()
         bindViewModel()
         viewModel.fetchTrendingMovies()
         viewModel.fetchCategoryMovies(.nowPlaying)
-    }
+        let backImage = UIImage(named: "chevron-icon")
+        navigationController?.navigationBar.backIndicatorImage = backImage
+        navigationController?.navigationBar.backIndicatorTransitionMaskImage = backImage
+        navigationItem.backButtonTitle = ""
+          }
     
     private func bindViewModel() {
         viewModel.onMoviesUpdated = { [weak self] in
             guard let self else { return }
             DispatchQueue.main.async {
-                self.trendingCollectionView.reloadData()
                 self.segmentCollectionView.reloadData()
                 self.categoryCollectionView.reloadData()
+            }
+        }
+        
+        viewModel.onTrendingUpdated = { [weak self] in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                self.trendingCollectionView.reloadData()
+               
             }
         }
     }
@@ -144,7 +156,7 @@ final class MoviesViewController: UIViewController {
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
         [headerLabel,searchBar,trendingTitleLabel,trendingCollectionView,segmentCollectionView,categoryCollectionView].forEach(contentView.addSubview)
-    }
+    } 
     
     private func constraints() {
         scrollView.snp.makeConstraints { make in
@@ -197,7 +209,12 @@ final class MoviesViewController: UIViewController {
         let detailViewController = MovieDetailViewController(viewModel: detailViewModel)
         navigationController?.pushViewController(detailViewController, animated: true)
     }
-
+    
+    private func openSearchScreen() {
+        let viewModel = SearchViewModel(service: DefaultNetworkService())
+        let vc = SearchViewController(viewModel: viewModel)
+        navigationController?.pushViewController(vc, animated: true)
+    }
 }
 
 extension MoviesViewController: UICollectionViewDataSource {
@@ -268,6 +285,8 @@ extension MoviesViewController: UICollectionViewDelegate {
                 viewModel.fetchCategoryMovies(.upcoming)
             case 2:
                 viewModel.fetchCategoryMovies(.topRated)
+            case 3:
+                viewModel.fetchCategoryMovies(.popular)
             default:
                 break
             }
@@ -295,5 +314,14 @@ extension MoviesViewController: UICollectionViewDelegateFlowLayout {
         }
 
         return (collectionViewLayout as? UICollectionViewFlowLayout)?.itemSize ?? .zero
+    }
+}
+
+
+extension MoviesViewController: UISearchBarDelegate {
+
+    func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+        openSearchScreen()
     }
 }

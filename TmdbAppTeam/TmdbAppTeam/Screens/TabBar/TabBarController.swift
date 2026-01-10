@@ -21,11 +21,11 @@ final class TabBarController: UITabBarController {
         )
         
         let searchVC = SearchViewController(
-            viewModal: SearchViewModel()
+            viewModel: SearchViewModel(service: DefaultNetworkService())
         )
         
         let watchListVC = WatchListViewController(
-            viewModel: WatchListViewModel()
+            viewModel: WatchListViewModel(service: DefaultNetworkService())
         )
 
         let moviesNav = UINavigationController(rootViewController: moviesVC)

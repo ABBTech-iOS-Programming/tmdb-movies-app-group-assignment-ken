@@ -9,6 +9,8 @@ import Foundation
 final class MovieDetailViewModel {
     private let service: DefaultNetworkService
     
+    var isFavorite: Bool = false
+    
     let movieId: Int
     var movieDetail: MovieDetail?
     var reviews: [Review] = []
@@ -43,6 +45,10 @@ final class MovieDetailViewModel {
     var posterURL: String? {
         guard let path = movieDetail?.posterPath else { return nil }
         return APIConstants.imageBaseURL + path
+    }
+    
+    func checkIfFavorite(watchListMovies: [Movie]) {
+        self.isFavorite = watchListMovies.contains(where: { $0.id == movieId })
     }
     
     
@@ -92,6 +98,20 @@ final class MovieDetailViewModel {
     
     func fetchAvatarImage(from url: String, completion: @escaping (Data?) -> Void) {
         service.downloadImage(from: url, completion: completion)
+    }
+    
+    func toggleWatchlist(isAdding: Bool) {
+        service.request(MovieEndpoints.addToWatchlist(movieId: movieId, isAdding: isAdding)) { (result: Result<WatchList, NetworkError>) in
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                   
+                    print("Watchlist update: Success")
+                case .failure(let error):
+                    print("Watchlist Error:", error)
+                }
+            }
+        }
     }
     
 }
