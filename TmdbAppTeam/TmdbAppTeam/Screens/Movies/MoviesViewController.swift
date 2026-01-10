@@ -25,6 +25,7 @@ final class MoviesViewController: UIViewController {
     private let scrollView = UIScrollView()
     private let contentView = UIView()
     
+    private var categoryHeightConstraint: Constraint?
 
     private let headerLabel: UILabel = {
         let label = UILabel()
@@ -112,6 +113,7 @@ final class MoviesViewController: UIViewController {
         cv.dataSource = self
         cv.delegate = self
         cv.tag = 1
+        cv.isScrollEnabled = false
         return cv
     }()
     
@@ -135,6 +137,10 @@ final class MoviesViewController: UIViewController {
             DispatchQueue.main.async {
                 self.segmentCollectionView.reloadData()
                 self.categoryCollectionView.reloadData()
+                self.categoryCollectionView.layoutIfNeeded()
+
+                self.categoryHeightConstraint?.update(offset: self.categoryCollectionView.contentSize.height)
+                self.view.layoutIfNeeded()
             }
         }
         
@@ -199,7 +205,7 @@ final class MoviesViewController: UIViewController {
         categoryCollectionView.snp.makeConstraints { make in
             make.top.equalTo(segmentCollectionView.snp.bottom).offset(16)
             make.leading.trailing.equalToSuperview()
-            make.height.equalTo(1000)
+            categoryHeightConstraint = make.height.equalTo(1).constraint
             make.bottom.equalToSuperview().offset(-20)
         }
     }
