@@ -1,9 +1,9 @@
 import UIKit
 import SnapKit
 
-final class SearchCollectionViewCell: UICollectionViewCell {
+final class MovieHorizontalCell: UICollectionViewCell {
 
-    static let reuseIdentifier = String(describing: SearchCollectionViewCell.self)
+    static let reuseIdentifier = String(describing: MovieHorizontalCell.self)
     
     private let cellStackView: UIStackView = {
         let sv = UIStackView()
@@ -16,7 +16,7 @@ final class SearchCollectionViewCell: UICollectionViewCell {
     private let rightStackView: UIStackView = {
         let sv = UIStackView()
         sv.axis = .vertical
-        sv.spacing = 8
+        sv.spacing = 13
         sv.alignment = .leading
         return sv
     }()
@@ -30,10 +30,10 @@ final class SearchCollectionViewCell: UICollectionViewCell {
         return iv
     }()
 
-    private let starImageView = SearchCollectionViewCell.makeIcon("star.fill", .systemOrange)
-    private let genreImageView = SearchCollectionViewCell.makeIcon("ticket", .white)
-    private let dateImageView = SearchCollectionViewCell.makeIcon("calendar", .white)
-    private let durationImageView = SearchCollectionViewCell.makeIcon("clock", .white)
+    private let starImageView = MovieHorizontalCell.makeIcon("star.fill", .systemOrange)
+    private let genreImageView = MovieHorizontalCell.makeIcon("ticket", .white)
+    private let dateImageView = MovieHorizontalCell.makeIcon("calendar", .white)
+    private let durationImageView = MovieHorizontalCell.makeIcon("clock", .white)
 
     private let movieTitle: UILabel = {
         let l = UILabel()
@@ -43,10 +43,10 @@ final class SearchCollectionViewCell: UICollectionViewCell {
         return l
     }()
 
-    private let movieAvg = SearchCollectionViewCell.makeLabel(color: .systemOrange)
-    private let movieGenre = SearchCollectionViewCell.makeLabel()
-    private let movieYear = SearchCollectionViewCell.makeLabel()
-    private let movieDuration = SearchCollectionViewCell.makeLabel()
+    private let movieAvg = MovieHorizontalCell.makeLabel(color: .systemOrange)
+    private let movieGenre = MovieHorizontalCell.makeLabel()
+    private let movieYear = MovieHorizontalCell.makeLabel()
+    private let movieDuration = MovieHorizontalCell.makeLabel()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -101,6 +101,20 @@ final class SearchCollectionViewCell: UICollectionViewCell {
                 .compactMap { genreMap[$0] }
                 .first ?? "Unknown"
         movieDuration.text = "-"
+        
+        let service = DefaultNetworkService()
+        service.request(MovieEndpoints.details(id: movie.id)) { [weak self] (result: Result<MovieDetail, NetworkError>) in
+            switch result {
+            case .success(let detail):
+                DispatchQueue.main.async {
+                    self?.movieDuration.text = "\(detail.runtime ?? 0) min"
+                }
+            case .failure:
+                DispatchQueue.main.async {
+                    self?.movieDuration.text = "-"
+                }
+            }
+        }
 
         if let path = movie.posterPath,
            let url = URL(string: APIConstants.imageBaseURL + path) {

@@ -25,7 +25,7 @@ final class TabBarController: UITabBarController {
         )
         
         let watchListVC = WatchListViewController(
-            viewModel: WatchListViewModel()
+            viewModel: WatchListViewModel(service: DefaultNetworkService())
         )
 
         let moviesNav = UINavigationController(rootViewController: moviesVC)
@@ -59,9 +59,10 @@ final class TabBarController: UITabBarController {
         let apperance = UITabBarAppearance()
       
         apperance.configureWithOpaqueBackground()
-        apperance.backgroundColor = UIColor(named: "blackMedium")
+        apperance.backgroundColor = .blackMedium
+        
         tabBar.tintColor = .systemBlue
-        tabBar.unselectedItemTintColor = .gray
+        tabBar.unselectedItemTintColor = .whiteDisable
         tabBar.isTranslucent = false
         tabBar.layer.cornerRadius = 20
         tabBar.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]

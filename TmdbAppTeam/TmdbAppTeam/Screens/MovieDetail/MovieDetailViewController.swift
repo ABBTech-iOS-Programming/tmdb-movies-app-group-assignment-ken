@@ -69,11 +69,18 @@ final class MovieDetailViewController:UIViewController {
     }
     
     private let bookmarkButton: UIButton = {
-        let button = UIButton(type: .system)
+        let button = UIButton(type: .custom)
         button.setImage(UIImage(systemName: "bookmark"), for: .normal)
-        button.tintColor = .blackHigh
+        button.tintColor = .whiteHigh
+        button.backgroundColor = .clear
         return button
     }()
+    
+    private func updateBookmarkIcon() {
+        bookmarkButton.isSelected = viewModel.isFavorite
+        let imageName = viewModel.isFavorite ? "bookmark.fill" : "bookmark"
+        bookmarkButton.setImage(UIImage(systemName: imageName), for: .normal)
+    }
     
     private let backGroundImage: UIImageView = {
         let imageView = UIImageView()
@@ -88,6 +95,8 @@ final class MovieDetailViewController:UIViewController {
         imageView.layer.cornerRadius = 16
         imageView.clipsToBounds = true
         imageView.contentMode = .scaleAspectFill
+        imageView.layer.borderWidth = 6
+        imageView.layer.borderColor = UIColor.background.cgColor
         return imageView
     }()
     
@@ -131,8 +140,20 @@ final class MovieDetailViewController:UIViewController {
         navigationController?.setNavigationBarHidden(true, animated: false)
         setupUI()
         binding()
+        updateBookmarkIcon()
         viewModel.fetchMovieDetails()
         viewModel.fetchMovieReview()
+        
+        bookmarkButton.addTarget(self, action: #selector(bookmarkButtonTapped), for: .touchUpInside)
+    }
+    
+    @objc private func bookmarkButtonTapped() {
+        
+        bookmarkButton.isSelected.toggle()
+        let imageName = bookmarkButton.isSelected ? "bookmark.fill" : "bookmark"
+        bookmarkButton.setImage(UIImage(systemName: imageName), for: .normal)
+        
+        viewModel.toggleWatchlist(isAdding: bookmarkButton.isSelected)
     }
     
     private func setupUI() {
@@ -372,7 +393,7 @@ extension MovieDetailViewController: UITableViewDataSource, UITableViewDelegate 
             return UITableViewCell()
         }
         let review = viewModel.reviews[indexPath.row]
-        cell.configure(with: review)
+        cell.configure(with: review, viewModel: self.viewModel)
         return cell
     }
 }

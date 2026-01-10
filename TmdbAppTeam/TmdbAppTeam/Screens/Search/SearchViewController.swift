@@ -21,7 +21,7 @@ final class SearchViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    private let emptyStateView = SearchEmptyStateView()
+    private let emptyStateView = EmptyStateLabel()
 
 
     private let searchBar: UISearchBar = {
@@ -53,8 +53,8 @@ final class SearchViewController: UIViewController {
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
         cv.backgroundColor = .clear
         cv.register(
-            SearchCollectionViewCell.self,
-            forCellWithReuseIdentifier: SearchCollectionViewCell.reuseIdentifier
+            MovieHorizontalCell.self,
+            forCellWithReuseIdentifier: MovieHorizontalCell.reuseIdentifier
         )
         cv.dataSource = self
         cv.delegate = self
@@ -88,6 +88,10 @@ final class SearchViewController: UIViewController {
         view.addSubview(searchBar)
         view.addSubview(collectionView)
         view.addSubview(emptyStateView)
+        
+        emptyStateView.configure(image: UIImage(named: "emptyStateImage"),
+                            title: "We Are Sorry, We Can Not\nFind the Movie :(",
+                            subtitle: "Find your movie by Type title, categories,\nyears, etc")
 
         searchBar.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
@@ -138,10 +142,10 @@ extension SearchViewController : UICollectionViewDataSource {
                         cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
 
         guard let cell = collectionView.dequeueReusableCell(
-            withReuseIdentifier: SearchCollectionViewCell.reuseIdentifier,
+            withReuseIdentifier: MovieHorizontalCell.reuseIdentifier,
             for: indexPath
-        ) as? SearchCollectionViewCell else {
-            return SearchCollectionViewCell()
+        ) as? MovieHorizontalCell else {
+            return MovieHorizontalCell()
         }
 
         cell.configure(with: viewModel.movies[indexPath.item],genreMap: viewModel.genreMap)

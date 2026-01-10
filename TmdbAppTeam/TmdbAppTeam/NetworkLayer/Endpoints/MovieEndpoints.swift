@@ -16,9 +16,14 @@ enum MovieEndpoints: Endpoint {
     case search(query: String)
     case reviews(id: Int)
     case genres
+    case addToWatchlist(movieId: Int, isAdding: Bool)
+    case getWatchlist
+    
     var baseURL: String {
         APIConstants.baseURL
     }
+    
+    private var accountId: Int { 22617555 }
 
     var path: String {
         switch self {
@@ -40,11 +45,20 @@ enum MovieEndpoints: Endpoint {
             return "/genre/movie/list"
         case .reviews(let id):
             return "/movie/\(id)/reviews"
+        case .addToWatchlist:
+            return "/account/\(accountId)/watchlist"
+        case .getWatchlist:
+            return "/account/\(accountId)/watchlist/movies"
         }
     }
 
     var method: HttpMethod {
-        .get
+        switch self {
+        case .addToWatchlist:
+            return .post
+        default:
+            return .get
+        }
     }
 
     var headers: [String : String]? {
@@ -66,6 +80,12 @@ enum MovieEndpoints: Endpoint {
     }
 
     var httpBody: Encodable? {
-        nil
+        switch self {
+        case .addToWatchlist(let movieId, let isAdding):
+            return WatchList(mediaId: movieId, watchlist: isAdding)
+        default:
+            return nil
+        }
+        }
     }
-}
+

@@ -14,6 +14,11 @@ struct Review: Codable {
         case author, content
         case authorDetails = "author_details"
     }
+    
+    var avatarURL: String? {
+        guard let path = authorDetails?.avatarPath else { return nil }
+        return APIConstants.imageBaseURL + path
+    }
 }
 
 struct AuthorDetails: Codable {

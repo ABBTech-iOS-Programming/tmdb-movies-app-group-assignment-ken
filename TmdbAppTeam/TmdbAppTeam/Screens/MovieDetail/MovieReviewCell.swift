@@ -101,7 +101,7 @@ final class MoviewReviewCell: UITableViewCell {
         }
     }
     
-    func configure(with review: Review) {
+    func configure(with review: Review, viewModel: MovieDetailViewModel) {
         authorNameLabel.text = review.author
         authorReviwLabel.text = review.content
         
@@ -113,7 +113,15 @@ final class MoviewReviewCell: UITableViewCell {
         }
         
         avatarImageView.image = UIImage(systemName: "person.circle.fill")
-   
+        
+        if let urlString = review.avatarURL {
+            viewModel.fetchAvatarImage(from: urlString) { [weak self] data in
+                guard let data = data else { return }
+                DispatchQueue.main.async {
+                    self?.avatarImageView.image = UIImage(data: data)
+                }
+            }
+        }
     }
     
     override func prepareForReuse() {

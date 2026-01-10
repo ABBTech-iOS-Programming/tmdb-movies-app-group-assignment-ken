@@ -11,7 +11,7 @@ import SnapKit
 final class MoviesViewController: UIViewController {
     
     private let viewModel: MoviesViewModel
-    
+    var watchlistMovies: [Movie] = []
     
     init(viewModel: MoviesViewModel) {
         self.viewModel = viewModel
@@ -26,6 +26,9 @@ final class MoviesViewController: UIViewController {
     private let contentView = UIView()
     
     private var categoryHeightConstraint: Constraint?
+
+    
+
 
     private let headerLabel: UILabel = {
         let label = UILabel()
@@ -129,7 +132,14 @@ final class MoviesViewController: UIViewController {
         navigationController?.navigationBar.backIndicatorImage = backImage
         navigationController?.navigationBar.backIndicatorTransitionMaskImage = backImage
         navigationItem.backButtonTitle = ""
-          }
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        viewModel.fetchListMovies { [weak self] movies in
+            self?.watchlistMovies = movies
+        }
+    }
     
     private func bindViewModel() {
         viewModel.onMoviesUpdated = { [weak self] in
@@ -205,6 +215,8 @@ final class MoviesViewController: UIViewController {
         categoryCollectionView.snp.makeConstraints { make in
             make.top.equalTo(segmentCollectionView.snp.bottom).offset(16)
             make.leading.trailing.equalToSuperview()
+
+           // make.height.equalTo(1000)
             categoryHeightConstraint = make.height.equalTo(1).constraint
             make.bottom.equalToSuperview().offset(-20)
         }
@@ -212,6 +224,7 @@ final class MoviesViewController: UIViewController {
     
     private func goToDetail(with movieId: Int) {
         let detailViewModel = MovieDetailViewModel( service: DefaultNetworkService(), movieId: movieId )
+        detailViewModel.checkIfFavorite(watchListMovies: self.watchlistMovies)
         let detailViewController = MovieDetailViewController(viewModel: detailViewModel)
         navigationController?.pushViewController(detailViewController, animated: true)
     }
