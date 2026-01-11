@@ -9,7 +9,7 @@ final class MovieHorizontalCell: UICollectionViewCell {
         let sv = UIStackView()
         sv.axis = .horizontal
         sv.spacing = 12
-        sv.alignment = .top
+        sv.alignment = .center
         return sv
     }()
 
@@ -102,19 +102,18 @@ final class MovieHorizontalCell: UICollectionViewCell {
                 .first ?? "Unknown"
         movieDuration.text = "-"
         
-        let service = DefaultNetworkService()
-        service.request(MovieEndpoints.details(id: movie.id)) { [weak self] (result: Result<MovieDetail, NetworkError>) in
-            switch result {
-            case .success(let detail):
-                DispatchQueue.main.async {
-                    self?.movieDuration.text = "\(detail.runtime ?? 0) min"
-                }
-            case .failure:
-                DispatchQueue.main.async {
-                    self?.movieDuration.text = "-"
-                }
+        Task {
+            let service = DefaultNetworkService()
+            
+            let detail: MovieDetail = try await service.request(MovieEndpoints.details(id: movie.id))
+            
+            await MainActor.run {
+                self.movieDuration.text = "\(detail.runtime ?? 0) min"
             }
+            
+
         }
+        
 
         if let path = movie.posterPath,
            let url = URL(string: APIConstants.imageBaseURL + path) {

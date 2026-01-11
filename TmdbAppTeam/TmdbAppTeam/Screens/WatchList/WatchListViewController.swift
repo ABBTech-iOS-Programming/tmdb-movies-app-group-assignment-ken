@@ -15,11 +15,14 @@ final class WatchListViewController : UIViewController {
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.minimumLineSpacing = 16
+        layout.sectionInset = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
+        
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
         cv.backgroundColor = .clear
         cv.register(MovieHorizontalCell.self, forCellWithReuseIdentifier: MovieHorizontalCell.reuseIdentifier)
         cv.dataSource = self
         cv.delegate = self
+        cv.contentInsetAdjustmentBehavior = .never
         return cv
     }()
     
@@ -39,13 +42,20 @@ final class WatchListViewController : UIViewController {
         setupUi()
         constraits()
         binding()
-        viewModel.fetchGenresAndWatchlist()
+        self.extendedLayoutIncludesOpaqueBars = true
+        Task {
+            await viewModel.fetchGenresAndWatchlist()
+        }
         
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        viewModel.fetchWatchList()
+        navigationController?.setNavigationBarHidden(false, animated: animated)
+        Task{
+           await viewModel.fetchWatchList()
+        }
+        
     }
     
     private func setupUi() {
@@ -62,14 +72,14 @@ final class WatchListViewController : UIViewController {
     private func constraits() {
         
         collectionView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(12)
-            make.leading.trailing.bottom.equalToSuperview().inset(16)
+            make.top.equalTo(view.safeAreaLayoutGuide)
+            make.leading.trailing.equalToSuperview()
+            make.bottom.equalToSuperview()
         }
         
         emptyView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(20)
-            make.centerX.equalToSuperview()
-            make.centerY.equalToSuperview()
+            make.center.equalToSuperview()
+            make.horizontalEdges.equalToSuperview().inset(40)
         }
     }
     
@@ -82,6 +92,7 @@ final class WatchListViewController : UIViewController {
                 self?.emptyView.isHidden = !isWatchlistEmpty
                 
                 self?.collectionView.reloadData()
+            
             }
         }
     }
@@ -114,6 +125,7 @@ extension WatchListViewController: UICollectionViewDelegate, UICollectionViewDel
         detailVM.checkIfFavorite(watchListMovies: viewModel.movies)
         
         let detailVC = MovieDetailViewController(viewModel: detailVM)
+        detailVC.hidesBottomBarWhenPushed = true
         
         navigationController?.pushViewController(detailVC, animated: true)
     }

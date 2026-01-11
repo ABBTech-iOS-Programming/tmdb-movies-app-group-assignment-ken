@@ -126,7 +126,10 @@ final class SearchViewController: UIViewController {
 
     @objc
     private func performSearch(_ query: String) {
-        viewModel.search(query: query)
+        Task {
+           await viewModel.search(query: query)
+        }
+        
     }
 }
 

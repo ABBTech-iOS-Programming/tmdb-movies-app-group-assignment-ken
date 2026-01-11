@@ -141,8 +141,10 @@ final class MovieDetailViewController:UIViewController {
         setupUI()
         binding()
         updateBookmarkIcon()
-        viewModel.fetchMovieDetails()
-        viewModel.fetchMovieReview()
+        Task{
+           await viewModel.fetchMovieDetails()
+           await viewModel.fetchMovieReview()
+        }
         
         bookmarkButton.addTarget(self, action: #selector(bookmarkButtonTapped), for: .touchUpInside)
     }
@@ -153,7 +155,10 @@ final class MovieDetailViewController:UIViewController {
         let imageName = bookmarkButton.isSelected ? "bookmark.fill" : "bookmark"
         bookmarkButton.setImage(UIImage(systemName: imageName), for: .normal)
         
-        viewModel.toggleWatchlist(isAdding: bookmarkButton.isSelected)
+        Task{
+           await viewModel.toggleWatchlist(isAdding: bookmarkButton.isSelected)
+        }
+        
     }
     
     private func setupUI() {
