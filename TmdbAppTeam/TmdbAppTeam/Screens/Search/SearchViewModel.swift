@@ -6,56 +6,49 @@
 //
 import UIKit
 final class SearchViewModel {
-
+    
     private let service: DefaultNetworkService
-
+    
     var movies: [Movie] = []
     
     var genreMap: [Int: String] = [:]
-
+    
     var onResultsUpdated: (() -> Void)?
-
+    
     init(service: DefaultNetworkService) {
         self.service = service
-        fetchGenres()
+        Task {
+           await fetchGenres()
+        }
     }
- 
-    func search(query: String) {
+    
+    func search(query: String) async {
         guard !query.trimmingCharacters(in: .whitespaces).isEmpty else {
             movies = []
-            onResultsUpdated?()
+            await MainActor.run {
+                onResultsUpdated?()
+            }
             return
         }
-
-        service.request(MovieEndpoints.search(query: query)) { [weak self]
-            (result: Result<MovieListResponse, NetworkError>) in
-
-            switch result {
-            case .success(let response):
-                self?.movies = response.results
-                DispatchQueue.main.async {
-                    self?.onResultsUpdated?()
-                }
-
-            case .failure(let error):
-                print("Search error:", error)
+        
+        do {
+            let response: MovieListResponse = try await service.request(MovieEndpoints.search(query: query))
+            self.movies = response.results
+            
+            await MainActor.run {
+                self.onResultsUpdated?()
             }
+        } catch {
+            print("Search error:", error)
         }
     }
- 
-    private func fetchGenres() {
-        service.request(MovieEndpoints.genres) { [weak self]
-            (result: Result<GenreResponse, NetworkError>) in
-
-            switch result {
-            case .success(let response):
-                response.genres.forEach {
-                    self?.genreMap[$0.id] = $0.name
-                }
-
-            case .failure(let error):
-                print("Genre error:", error)
-            }
+    
+    private func fetchGenres() async {
+        do {
+            let response: GenreResponse = try await service.request(MovieEndpoints.genres)
+            response.genres.forEach { self.genreMap[$0.id] = $0.name }
+        } catch {
+            print("Genre error:", error)
         }
     }
 }

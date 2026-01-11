@@ -7,7 +7,7 @@
 
 import Foundation
 protocol NetworkService {
-    func request<T: Decodable>(_ endpoint: Endpoint, complation: @escaping (Result<T, NetworkError>) -> Void  )
+    func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T
 }
 
 final class DefaultNetworkService:
@@ -18,36 +18,32 @@ final class DefaultNetworkService:
         self.session = session
     }
     
-    func request<T: Decodable>(_ endpoint: Endpoint, complation: @escaping (Result<T, NetworkError>) -> Void)  {
-        
+    func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
         let createRequest = endpoint.makeRequest()
+        
         switch createRequest {
-        case .success(let request):
-            session.dataTask(with: request) {
-                data, reponse, error in
-                if let error {
-                   return complation(.failure(.unknown(error)))
-                }
-                if let httpResponse = reponse as? HTTPURLResponse {
+        case .success(let urlRequest):
+            do {
+                let (data, response) = try await session.data(for: urlRequest)
+                
+                if let httpResponse = response as? HTTPURLResponse {
                     let statusCode = httpResponse.statusCode
                     guard (200...299).contains(statusCode) else {
-                        return complation(.failure(.serverError(statusCode: statusCode)))
+                        throw NetworkError.serverError(statusCode: statusCode)
                     }
                 }
                 
-                guard let data else { return complation(.failure(.noData))}
-                
                 do {
-                    let decodedData = try JSONDecoder().decode(T.self, from: data)
-                    complation(.success(decodedData))
+                    return try JSONDecoder().decode(T.self, from: data)
                 } catch {
-                    complation(.failure(.decodingError))
+                    throw NetworkError.decodingError
+                }
+            } catch {
+                throw error
             }
-       
-            }.resume()
             
         case .failure(let error):
-            complation(.failure(error))
+            throw error
         }
     }
     

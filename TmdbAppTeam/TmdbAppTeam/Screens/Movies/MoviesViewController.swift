@@ -126,8 +126,12 @@ final class MoviesViewController: UIViewController {
         searchBar.delegate = self
         setupUI()
         bindViewModel()
-        viewModel.fetchTrendingMovies()
-        viewModel.fetchCategoryMovies(.nowPlaying)
+        
+        Task {
+           await viewModel.fetchTrendingMovies()
+           await viewModel.fetchCategoryMovies(.nowPlaying)
+        }
+        
         let backImage = UIImage(named: "chevron-icon")
         navigationController?.navigationBar.backIndicatorImage = backImage
         navigationController?.navigationBar.backIndicatorTransitionMaskImage = backImage
@@ -136,8 +140,10 @@ final class MoviesViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        viewModel.fetchListMovies { [weak self] movies in
-            self?.watchlistMovies = movies
+        
+        Task {
+            let movies = await viewModel.fetchListMovies()
+            self.watchlistMovies = movies
         }
     }
     
@@ -226,6 +232,8 @@ final class MoviesViewController: UIViewController {
         let detailViewModel = MovieDetailViewModel( service: DefaultNetworkService(), movieId: movieId )
         detailViewModel.checkIfFavorite(watchListMovies: self.watchlistMovies)
         let detailViewController = MovieDetailViewController(viewModel: detailViewModel)
+        
+        detailViewController.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(detailViewController, animated: true)
     }
     
@@ -297,18 +305,21 @@ extension MoviesViewController: UICollectionViewDelegate {
             selectedSegmentIndex = indexPath.item
             segmentCollectionView.reloadData()
 
-            switch indexPath.item {
-            case 0:
-                viewModel.fetchCategoryMovies(.nowPlaying)
-            case 1:
-                viewModel.fetchCategoryMovies(.upcoming)
-            case 2:
-                viewModel.fetchCategoryMovies(.topRated)
-            case 3:
-                viewModel.fetchCategoryMovies(.popular)
-            default:
-                break
+            Task{
+                switch indexPath.item {
+                case 0:
+                   await viewModel.fetchCategoryMovies(.nowPlaying)
+                case 1:
+                   await viewModel.fetchCategoryMovies(.upcoming)
+                case 2:
+                  await  viewModel.fetchCategoryMovies(.topRated)
+                case 3:
+                   await viewModel.fetchCategoryMovies(.popular)
+                default:
+                    break
+                }
             }
+           
             return
         }
         let selectedMovie: Movie

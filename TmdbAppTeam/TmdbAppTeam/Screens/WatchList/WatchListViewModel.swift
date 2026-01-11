@@ -17,27 +17,31 @@ final class WatchListViewModel {
         self.service = service
     }
     
-    func fetchWatchList() {
+    func fetchWatchList() async {
+        do {
+            let response: WatchListResponse = try await service.request(MovieEndpoints.getWatchlist)
+            self.movies = response.results ?? []
+            
+            await MainActor.run {
+                self.onDataUpdated?()
+            }
+        } catch {
+            print("WatchList error:", error)
+        }
         
-        service.request(MovieEndpoints.getWatchlist) { [weak self] (result: Result<WatchListResponse, NetworkError>) in
-            switch result {
-            case .success(let response):
-                self?.movies = response.results ?? []
-                self?.onDataUpdated?()
-            case .failure(let error):
-                print("WatchList error:", error)
-            }
-        }
     }
     
-    func fetchGenresAndWatchlist() {
-        service.request(MovieEndpoints.genres) { [weak self] (result: Result<GenreResponse, NetworkError>) in
-            if case .success(let response) = result {
-                response.genres.forEach { self?.genreMap[$0.id] = $0.name }
-            }
-            self?.fetchWatchList()
+    func fetchGenresAndWatchlist() async {
+        
+        do{
+            let genreResponse: GenreResponse = try await service.request(MovieEndpoints.genres)
+            genreResponse.genres.forEach { self.genreMap[$0.id] = $0.name }
+            
+            await fetchWatchList()
+        } catch {
+            print("Fetch Genre error:", error)
         }
+        
+        
     }
-    
-    
 }

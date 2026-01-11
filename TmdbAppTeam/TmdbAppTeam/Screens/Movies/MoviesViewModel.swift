@@ -28,24 +28,22 @@ final class MoviesViewModel {
         self.service = service
     }
     
-    func fetchTrendingMovies() {
-        service.request(MovieEndpoints.trending) {
-            [weak self] (result: Result<MovieListResponse, NetworkError>) in
+    func fetchTrendingMovies() async {
+        
+        do {
+            let response: MovieListResponse = try await service.request(MovieEndpoints.trending)
+            self.trendingMovies = response.results
             
-            switch result {
-            case .success(let response):
-                self?.trendingMovies = response.results
-                DispatchQueue.main.async {
-                    self?.onTrendingUpdated?()
-                }
-                
-            case .failure(let error):
-                print("Trending error:", error)
+            await MainActor.run {
+                self.onTrendingUpdated?()
             }
+            
+        }catch {
+            print("Trending error:", error)
         }
     }
     
-    func fetchCategoryMovies(_ category: MovieCategory) {
+    func fetchCategoryMovies(_ category: MovieCategory) async {
         let endpoint: Endpoint
         
         switch category {
@@ -59,31 +57,29 @@ final class MoviesViewModel {
             endpoint = MovieEndpoints.popular
         }
         
-        service.request(endpoint) {
-            [weak self] (result: Result<MovieListResponse, NetworkError>) in
+        
+        do {
+            let response: MovieListResponse = try await service.request(endpoint)
+            self.categoryMovies = response.results
             
-            switch result {
-            case .success(let response):
-                self?.categoryMovies = response.results
-                DispatchQueue.main.async {
-                    self?.onMoviesUpdated?()
-                }
-                
-            case .failure(let error):
-                print("Category error:", error)
+            await MainActor.run {
+                self.onMoviesUpdated?()
             }
+        } catch {
+            print("Category error:", error)
         }
     }
     
-    func fetchListMovies(completion: @escaping ([Movie]) -> Void) {
-        service.request(MovieEndpoints.getWatchlist) { (result:Result<MovieListResponse, NetworkError>) in
-            switch result {
-            case .success(let response):
-                completion(response.results)
-            case .failure(let error):
-                print("Watchlist gətirilərkən xəta yarandı: \(error)")
-                completion([])
-            }
+    
+    func fetchListMovies() async -> [Movie]{
+        
+        do {
+            let response: MovieListResponse = try await service.request(MovieEndpoints.getWatchlist)
+            return response.results
+        } catch {
+            print("LOG: Watchlist error \(error)")
+            return []
         }
+        
     }
 }

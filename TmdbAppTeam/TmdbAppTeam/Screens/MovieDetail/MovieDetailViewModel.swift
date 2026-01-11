@@ -52,18 +52,16 @@ final class MovieDetailViewModel {
     }
     
     
-    func fetchMovieDetails() {
-        service.request(MovieEndpoints.details(id: movieId)) { [weak self] (result: Result<MovieDetail, NetworkError>) in
-            switch result {
-            case .success(let detail):
-                self?.movieDetail = detail
-                
-                DispatchQueue.main.async {
-                    self?.onDataFetched?()
-                }
-            case .failure(let error):
-                print("LOG Error:", error)
+    func fetchMovieDetails() async {
+        do {
+            let detail: MovieDetail = try await service.request(MovieEndpoints.details(id: movieId))
+            self.movieDetail = detail
+            
+            await MainActor.run {
+                self.onDataFetched?()
             }
+        } catch {
+            print("LOG Error:", error)
         }
     }
     
@@ -81,18 +79,17 @@ final class MovieDetailViewModel {
         service.downloadImage(from: url, completion: completion)
     }
     
-    func fetchMovieReview() {
-        service.request(MovieEndpoints.reviews(id: movieId)) { [weak self] (result: Result<ReviewListResponse, NetworkError>) in
-            switch result {
-            case .success(let response):
-                self?.reviews = response.results
-                
-                DispatchQueue.main.async {
-                    self?.onReviewsFetched?()
-                }
-            case .failure(let error):
-                print("LOG Review Error:", error)
+    func fetchMovieReview() async {
+        
+        do{
+            let response: ReviewListResponse = try await service.request(MovieEndpoints.reviews(id: movieId))
+            self.reviews = response.results
+            
+            await MainActor.run {
+                self.onReviewsFetched?()
             }
+        } catch {
+            print("LOG Review Error:", error)
         }
     }
     
@@ -100,17 +97,13 @@ final class MovieDetailViewModel {
         service.downloadImage(from: url, completion: completion)
     }
     
-    func toggleWatchlist(isAdding: Bool) {
-        service.request(MovieEndpoints.addToWatchlist(movieId: movieId, isAdding: isAdding)) { (result: Result<WatchList, NetworkError>) in
-            DispatchQueue.main.async {
-                switch result {
-                case .success:
-                   
-                    print("Watchlist update: Success")
-                case .failure(let error):
-                    print("Watchlist Error:", error)
-                }
-            }
+    func toggleWatchlist(isAdding: Bool) async {
+        
+        do {
+            let watchlist : WatchList = try await service.request(MovieEndpoints.addToWatchlist(movieId: self.movieId, isAdding: isAdding))
+            print("Watchlist update: Success")
+        } catch {
+            print("Watchlist Error:", error)
         }
     }
     
